@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz CCNA en français</title>
+<style>
+  :root { --bg:#0f1720; --card:#17212c; --ink:#e8eef4; --muted:#9fb0c0; --accent:#1ba0d7; --ok:#2fbf71; --ko:#e5484d; --line:#24313f; }
+  @media (prefers-color-scheme: light) { :root { --bg:#f4f7fa; --card:#ffffff; --ink:#14202b; --muted:#5b6b7a; --line:#dde5ec; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:720px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { font-size:1.6rem; margin:0 0 4px; }
+  .sub { color:var(--muted); margin:0 0 24px; }
+  .q { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin:0 0 14px; }
+  .q h2 { font-size:1rem; margin:0 0 10px; }
+  .q code { background:rgba(127,127,127,.15); padding:1px 5px; border-radius:4px; }
+  label { display:block; padding:8px 10px; border:1px solid var(--line); border-radius:8px; margin:6px 0; cursor:pointer; }
+  label:hover { border-color:var(--accent); }
+  input[type=radio] { margin-right:8px; }
+  .why { display:none; margin-top:10px; color:var(--muted); font-size:.95rem; }
+  .done .why { display:block; }
+  .good { border-color:var(--ok) !important; }
+  .bad { border-color:var(--ko) !important; }
+  button { background:var(--accent); color:#fff; border:0; border-radius:10px; padding:12px 20px; font-size:1rem; cursor:pointer; width:100%; }
+  #result { display:none; background:var(--card); border:2px solid var(--accent); border-radius:12px; padding:18px; margin-top:18px; text-align:center; }
+  #result .score { font-size:2.2rem; font-weight:700; }
+  .cta { margin-top:12px; color:var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Quiz CCNA 200-301 en français</h1>
+  <p class="sub">20 questions, réponses expliquées. Gratuit. Fais le test, puis compare ton score.</p>
+  <form id="quiz"></form>
+  <button id="check" type="button">Voir mon score</button>
+  <div id="result">
+    <div class="score" id="score"></div>
+    <div id="verdict"></div>
+    <p class="cta">Examens blancs complets et labs Packet Tracer corrigés en français : bientôt disponibles.<br>
+    <a href="https://tally.so/r/8NNrXO" target="_blank" rel="noopener" style="display:inline-block;margin-top:10px;background:var(--accent);color:#fff;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:600">Rejoindre la liste d'attente (gratuit)</a></p>
+  </div>
+</main>
+<script>
+const Q = [
+ ["Combien d'adresses d'hôtes utilisables contient un sous-réseau en /26 ?", ["30","62","64","126"], 1, "Un /26 laisse 6 bits d'hôte : 2^6 = 64 adresses, moins l'adresse réseau et le broadcast = 62."],
+ ["Quel est le masque décimal d'un préfixe /27 ?", ["255.255.255.192","255.255.255.224","255.255.255.240","255.255.255.248"], 1, "/27 = 24 + 3 bits : le dernier octet vaut 128+64+32 = 224."],
+ ["Combien de réseaux /24 tiennent dans un /22 ?", ["2","4","8","16"], 1, "De /22 à /24, on ajoute 2 bits : 2^2 = 4 réseaux /24."],
+ ["À quelle couche du modèle OSI travaille un switch classique ?", ["Couche 1 (physique)","Couche 2 (liaison)","Couche 3 (réseau)","Couche 4 (transport)"], 1, "Un switch classique transmet les trames selon les adresses MAC : couche 2."],
+ ["Quelle commande affiche la table des adresses MAC sur un switch Cisco ?", ["show ip route","show mac address-table","show arp","show interfaces status"], 1, "<code>show mac address-table</code> liste les MAC apprises par port et par VLAN."],
+ ["Quelle commande enregistre la configuration pour qu'elle survive à un redémarrage ?", ["write terminal","copy startup-config running-config","copy running-config startup-config","save config"], 2, "On copie la configuration active (running) vers la configuration de démarrage (startup) en NVRAM."],
+ ["Quel protocole empêche les boucles de couche 2 entre switchs ?", ["OSPF","STP","HSRP","CDP"], 1, "Le Spanning Tree Protocol bloque les liens redondants pour éviter les boucles."],
+ ["Sur un trunk 802.1Q Cisco, quel est le VLAN natif par défaut ?", ["VLAN 0","VLAN 1","VLAN 99","Aucun"], 1, "Par défaut le VLAN natif est le VLAN 1 ; ses trames passent non étiquetées sur le trunk."],
+ ["Quelle est la distance administrative par défaut d'OSPF ?", ["90","100","110","120"], 2, "OSPF = 110 (EIGRP interne = 90, RIP = 120)."],
+ ["Quelle commande crée une route par défaut IPv4 vers 10.0.0.1 ?", ["ip route 0.0.0.0 255.255.255.255 10.0.0.1","ip route 0.0.0.0 0.0.0.0 10.0.0.1","ip default-route 10.0.0.1","route add default 10.0.0.1"], 1, "Réseau 0.0.0.0 avec masque 0.0.0.0 = toutes les destinations."],
+ ["Un PC a l'adresse 169.254.12.5. Que s'est-il probablement passé ?", ["Il a reçu une adresse publique","Il n'a pas obtenu de réponse DHCP","Il est en IPv6","Il est en NAT"], 1, "169.254.0.0/16 est l'auto-configuration (APIPA) utilisée quand aucun serveur DHCP ne répond."],
+ ["Dans quel ordre se déroulent les échanges DHCP ?", ["Request, Offer, Discover, Ack","Discover, Offer, Request, Ack","Offer, Discover, Ack, Request","Discover, Request, Offer, Ack"], 1, "DORA : Discover, Offer, Request, Acknowledge."],
+ ["Quel préfixe correspond aux adresses IPv6 link-local ?", ["2000::/3","FC00::/7","FE80::/10","FF00::/8"], 2, "FE80::/10 = link-local ; FF00::/8 = multicast ; FC00::/7 = adresses uniques locales."],
+ ["Comment appelle-t-on le NAT où plusieurs hôtes partagent une seule adresse publique grâce aux ports ?", ["NAT statique","NAT dynamique","PAT (NAT overload)","NAT64"], 2, "Le PAT (overload) différencie les connexions par numéro de port."],
+ ["Une ACL standard numérotée filtre sur…", ["l'adresse source uniquement","l'adresse destination uniquement","source, destination et ports","les adresses MAC"], 0, "ACL standard (1-99, 1300-1999) = adresse IP source uniquement ; l'ACL étendue filtre aussi destination et ports."],
+ ["Quel est le port par défaut de SSH ?", ["TCP 21","TCP 22","TCP 23","UDP 22"], 1, "SSH = TCP 22 ; Telnet = TCP 23 (non chiffré, à éviter)."],
+ ["Quel protocole de redondance de passerelle est propriétaire Cisco ?", ["VRRP","GLBP et HSRP","LACP","LLDP"], 1, "HSRP et GLBP sont propriétaires Cisco ; VRRP est un standard ouvert."],
+ ["À quoi sert le port-security sur un switch ?", ["Chiffrer le trafic du port","Limiter les adresses MAC autorisées sur le port","Accélérer le port","Créer un VLAN"], 1, "Le port-security limite le nombre ou la liste des MAC sur un port et peut couper le port en cas de violation."],
+ ["Lequel de ces protocoles garantit la livraison des données ?", ["UDP","TCP","ICMP","ARP"], 1, "TCP utilise accusés de réception et retransmissions ; UDP non."],
+ ["Quelle est la norme de sécurité Wi-Fi la plus récente parmi celles-ci ?", ["WEP","WPA","WPA2","WPA3"], 3, "WPA3 remplace WPA2 (SAE au lieu de la clé pré-partagée classique)."]
+];
+const form = document.getElementById('quiz');
+Q.forEach(([q, opts], i) => {
+  const d = document.createElement('div'); d.className = 'q'; d.id = 'q' + i;
+  d.innerHTML = `<h2>${i + 1}. ${q}</h2>` + opts.map((o, j) =>
+    `<label id="l${i}_${j}"><input type="radio" name="q${i}" value="${j}">${o}</label>`).join('') +
+    `<div class="why">${Q[i][3]}</div>`;
+  form.appendChild(d);
+});
+document.getElementById('check').onclick = () => {
+  let s = 0;
+  Q.forEach(([, , good], i) => {
+    const pick = form.querySelector(`input[name=q${i}]:checked`);
+    document.getElementById('q' + i).classList.add('done');
+    document.getElementById(`l${i}_${good}`).classList.add('good');
+    if (pick && +pick.value === good) s++;
+    else if (pick) document.getElementById(`l${i}_${pick.value}`).classList.add('bad');
+  });
+  document.getElementById('score').textContent = `${s} / 20`;
+  document.getElementById('verdict').textContent = s >= 17 ? "Très bon niveau : prêt pour des examens blancs complets."
+    : s >= 12 ? "Bonne base : quelques notions à revoir avant l'examen." : "À travailler : commence par l'adressage IP et les bases du switching.";
+  const r = document.getElementById('result'); r.style.display = 'block'; r.scrollIntoView({behavior: 'smooth'});
+};
+</script>
+</body>
+</html>
